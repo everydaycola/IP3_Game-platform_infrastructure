@@ -1,0 +1,115 @@
+services:
+  #Reverse proxy is only for local testing!
+  proxy:
+    image: nginx:latest
+    container_name: reverse-proxy
+    ports:
+      - "8090:80"
+    networks:
+     - app_network
+    configs:
+      - source: nginx-config
+        target: /etc/nginx/nginx.conf
+    depends_on:
+      - platform-frontend
+      - tic-tac-toe-frontend
+
+  tic-tac-toe-frontend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/tic-tac-toe/tic-tac-toe-frontend
+    container_name: tic-tac-toe-frontend
+    networks:
+     - app_network
+    ports:
+      - "8091:80"
+    depends_on:
+      - tic-tac-toe-backend
+
+  tic-tac-toe-backend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/tic-tac-toe/tic-tac-toe-backend
+    container_name: tic-tac-toe-backend
+    expose:
+      - "8081"
+    networks:
+     - app_network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=tictactoe  
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      - platform-db
+
+  platform-frontend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-frontend
+    container_name: platform-frontend
+    networks:
+     - app_network
+    expose:
+      - "80"
+    depends_on:
+      - platform-backend
+
+  platform-backend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-backend
+    container_name: platform-backend-image
+    expose:
+      - "8080"
+    networks:
+     - app_network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=platform  
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    depends_on:
+      - platform-db
+
+
+  platform-db:
+    image: postgres:17.6-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: 'postgres'
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5443:5432'
+    networks:
+     - app_network
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql
+      - ./init-scripts/sql:/docker-entrypoint-initdb.d/
+
+      
+networks:
+  app_network:
+
+# Reverse proxy only required for running dockerized localy.
+configs:
+  nginx-config:
+    content: |
+      events {}
+
+      http {
+        server {
+          listen 80;
+
+          location /gamehosts/tic-tac-toe/ {
+            proxy_pass http://tic-tac-toe-frontend/;
+          }
+
+          # API's
+          location /api {
+            proxy_pass http://platform-backend:8080;
+          }
+
+          location /tic-tac-toe/api {
+            proxy_pass http://tic-tac-toe-backend:8081;
+          }
+
+          # MAIN FRONTEND
+          location / {
+            proxy_pass http://platform-frontend:80;
+          }
+
+        }
+      }
