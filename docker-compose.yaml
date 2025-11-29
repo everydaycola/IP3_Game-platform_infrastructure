@@ -3,7 +3,6 @@ name: team_14
 services:
   app_postgres:
     image: postgres:17.6-alpine
-    restart: always
     environment:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'password'
@@ -20,7 +19,7 @@ services:
   idp_mysql:
     image: mysql:9.0.1
     volumes:
-      - ./idp_mysql_data:/var/lib/mysql
+      - kc_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_DATABASE: 'keycloak'
@@ -48,6 +47,9 @@ services:
       - idp_mysql
     networks:
       - kc
+
+volumes:
+  kc_data:
 
 networks:
   kc:
