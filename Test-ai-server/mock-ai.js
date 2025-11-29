@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 8000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -27,7 +27,7 @@ app.post('/api/tictactoe/ai-move', (req, res) => {
 
     for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
         for (let colIndex = 0; colIndex < 3; colIndex++) {
-            if (boardState[rowIndex][colIndex] === 0) {
+            if (boardState[rowIndex][colIndex] === '0') {
                 availableMoves.push({ row: rowIndex, col: colIndex });
             }
         }
@@ -56,7 +56,7 @@ app.post('/api/tictactoe/ai-move', (req, res) => {
     // Simulate a slight delay (optional, makes it feel like AI is "thinking")
     setTimeout(() => {
         res.json(response);
-    },100 + Math.random() * 1000);
+    },100 + Math.random() * 300);
 });
 
 app.listen(port, () => {
