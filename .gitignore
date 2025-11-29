@@ -2,3 +2,4 @@
 /idp_mysql_data/
 /.idea/
 ./development-test-server/postgresql
+/development-test-server/idp_mysql_data
