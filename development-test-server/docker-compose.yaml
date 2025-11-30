@@ -35,7 +35,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=tictactoe  
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
-      # AI-CATALOG-API_URL: not-yet-implemented # todo: implement
       SPRING_JPA_HIBERNATE_DDL-AUTO: update
       SPRING_JPA_SHOW-SQL: false
       SPRING_SQL_INIT_MODE: always
