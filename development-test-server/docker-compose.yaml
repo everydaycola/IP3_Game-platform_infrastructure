@@ -35,6 +35,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=tictactoe  
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
+      # AI-CATALOG-API_URL: not-yet-implemented # todo: implement
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+      SPRING_JPA_SHOW-SQL: false
+      SPRING_SQL_INIT_MODE: always
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
+      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
     depends_on:
       - platform-db
       - idp_keycloak
@@ -60,6 +67,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=platform  
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+      SPRING_JPA_SHOW-SQL: false
+      SPRING_SQL_INIT_MODE: always
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
     depends_on:
       - platform-db
       - idp_keycloak
@@ -89,13 +101,14 @@ services:
       MYSQL_DATABASE: 'keycloak'
       MYSQL_USER: 'keycloak'
       MYSQL_PASSWORD: 'password'
-    ports:
+    expose:
       - '3306'
     networks:
       - app_network
 
   idp_keycloak:
     image: quay.io/keycloak/keycloak:26.3
+    container_name: idp_keycloak
     environment:
       KEYCLOAK_ADMIN: 'admin'
       KEYCLOAK_ADMIN_PASSWORD: 'admin'
@@ -104,19 +117,27 @@ services:
       KC_DB_URL_DATABASE: 'keycloak'
       KC_DB_USERNAME: 'keycloak'
       KC_DB_PASSWORD: 'password'
-    command: start
-    ports:
-      - "8180:8080"
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY: 'edge'
+      KC_HOSTNAME: 'http://localhost:8090/auth'
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HTTP_RELATIVE_PATH: '/auth'
+    command: start --import-realm
+    expose:
+      - "8080"
     depends_on:
       - idp_mysql
     networks:
       - app_network
+    volumes:
+      # make sure to delete any 'authorizationSettings' from realm-export.json
+      - ./keycloak/import/realm-export.json:/opt/keycloak/data/import/FourteenGames-realm.json
 
-      
 networks:
   app_network:
 
-# Reverse proxy only required for running dockerized localy.
+# Reverse proxy only required for running dockerized locally.
 configs:
   nginx-config:
     content: |
@@ -125,6 +146,15 @@ configs:
       http {
         server {
           listen 80;
+      
+          location /auth/ {
+            proxy_pass http://idp_keycloak:8080;
+      
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
+          }
 
           location /gamehosts/tic-tac-toe/ {
             proxy_pass http://tic-tac-toe-frontend/;
