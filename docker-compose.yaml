@@ -51,6 +51,20 @@ services:
       # make sure to delete any 'authorizationSettings' from realm-export.json
       - ./keycloak/import/realm-export.json:/opt/keycloak/data/import/FourteenGames-realm.json
 
+  app_rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: 'user'
+      RABBITMQ_DEFAULT_PASS: 'password'
+    ports:
+      - "5672:5672" #AMQP
+      - "15672:15672" #MGMT
+    networks:
+      - backend
+    volumes:
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
+      - ./rabbitmq/log/:/var/log/rabbitmq/
+
 volumes:
   kc_data:
 
