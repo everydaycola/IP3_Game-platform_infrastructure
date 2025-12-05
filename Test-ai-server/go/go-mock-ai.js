@@ -15,7 +15,7 @@ const WHITE = "W";
 
 const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 
-app.post('/api/go/ai-move', (req, res) => {
+app.post('/go/api/ai-move', (req, res) => {
     console.log('--- Go AI Turn ---');
 
     const { boardState } = req.body;

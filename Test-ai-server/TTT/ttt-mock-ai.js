@@ -13,7 +13,7 @@ app.use((req, res, next) => {
 });
 
 // The Mock AI Endpoint
-app.post('/api/tictactoe/ai-move', (req, res) => {
+app.post('/tic-tac-toe/api/ai-move', (req, res) => {
     console.log('Request received:', req.body);
 
     const { boardState } = req.body;
