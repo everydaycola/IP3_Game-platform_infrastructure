@@ -18,13 +18,13 @@ const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 app.post('/go/api/ai-move', (req, res) => {
     console.log('--- Go AI Turn ---');
 
-    const { boardState } = req.body;
+    const boardState = req.body.board;
+    const size = req.body.size;
 
     if (!boardState || !Array.isArray(boardState) || boardState.length === 0) {
         return res.status(400).json({ error: "Invalid boardState format" });
     }
 
-    const size = boardState.length;
     const center = Math.floor(size / 2);
 
     let possibleMoves = [];
@@ -93,9 +93,9 @@ app.post('/go/api/ai-move', (req, res) => {
     console.log(`Board Size: ${size}x${size}`);
     console.log(`AI places White at [${selectedMove.row}, ${selectedMove.col}] (Score: ${selectedMove.score.toFixed(2)})`);
 
-    setTimeout(() => {
+    // setTimeout(() => {
         res.json(response);
-    }, 200 + Math.random() * 400);
+    // }, 200 + Math.random() * 400);
 });
 
 app.listen(port, () => {
