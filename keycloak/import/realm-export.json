@@ -1956,7 +1956,7 @@
     "referrerPolicy": "no-referrer",
     "xRobotsTag": "none",
     "xFrameOptions": "SAMEORIGIN",
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:5173 http://localhost:5174; object-src 'none';",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:5173 http://localhost:5174 http://localhost:5175; object-src 'none';",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
   "smtpServer": {},
