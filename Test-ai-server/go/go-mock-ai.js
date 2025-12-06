@@ -18,6 +18,10 @@ const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 app.post('/go/api/ai-move', (req, res) => {
     console.log('--- Go AI Turn ---');
 
+    if (req.body.isLastTurnPassed) {
+        return res.json({pass: true});
+    }
+
     const boardState = req.body.board;
     const size = req.body.size;
 
@@ -87,7 +91,7 @@ app.post('/go/api/ai-move', (req, res) => {
         row: selectedMove.row,
         col: selectedMove.col,
         flatIndex: flatIndex,
-        played_as: WHITE
+        passed: false
     };
 
     console.log(`Board Size: ${size}x${size}`);
