@@ -19,7 +19,7 @@ app.post('/go/api/ai-move', (req, res) => {
     console.log('--- Go AI Turn ---');
 
     if (req.body.isLastTurnPassed) {
-        return res.json({pass: true});
+        return res.json({passed: true});
     }
 
     const boardState = req.body.board;
