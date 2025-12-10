@@ -77,7 +77,7 @@ app.post('/go/api/ai-move', (req, res) => {
     }
 
     if (possibleMoves.length === 0) {
-        return res.json({pass: true, message: "AI passes"});
+        return res.json({passed: true, message: "AI passes"});
     }
 
     possibleMoves.sort((a, b) => b.score - a.score);
@@ -97,9 +97,9 @@ app.post('/go/api/ai-move', (req, res) => {
     console.log(`Board Size: ${size}x${size}`);
     console.log(`AI places White at [${selectedMove.row}, ${selectedMove.col}] (Score: ${selectedMove.score.toFixed(2)})`);
 
-    // setTimeout(() => {
+    setTimeout(() => {
         res.json(response);
-    // }, 200 + Math.random() * 400);
+    }, 200 + Math.random() * 200);
 });
 
 app.listen(port, () => {
