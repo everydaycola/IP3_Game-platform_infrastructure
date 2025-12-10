@@ -16,8 +16,6 @@ const WHITE = "W";
 const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 
 app.post('/go/api/ai-move', (req, res) => {
-    console.log('--- Go AI Turn ---');
-
     if (req.body.isLastTurnPassed) {
         return res.json({passed: true});
     }
@@ -51,21 +49,28 @@ app.post('/go/api/ai-move', (req, res) => {
                     { dr: 0, dc: -1 }, { dr: 0, dc: 1 }
                 ];
 
-                directions.forEach(({ dr, dc }) => {
+                let blackNeighbors = 0;
+
+                directions.forEach(({dr, dc}) => {
                     const nr = r + dr;
                     const nc = c + dc;
 
                     if (isValid(nr, nc, size)) {
                         const neighbor = boardState[nr][nc];
                         if (neighbor === WHITE) {
-                            score += 3.0;
+                            score += 3;
                             occupiedNeighbors++;
                         } else if (neighbor === BLACK) {
                             score += 2.5;
                             occupiedNeighbors++;
+                            blackNeighbors++;
                         }
                     }
                 });
+
+                if (blackNeighbors >= 3) {
+                    continue;
+                }
 
                 if (occupiedNeighbors === 4) {
                     score -= 50;
@@ -77,6 +82,7 @@ app.post('/go/api/ai-move', (req, res) => {
     }
 
     if (possibleMoves.length === 0) {
+        console.log("AI passes");
         return res.json({passed: true, message: "AI passes"});
     }
 
@@ -94,7 +100,6 @@ app.post('/go/api/ai-move', (req, res) => {
         passed: false
     };
 
-    console.log(`Board Size: ${size}x${size}`);
     console.log(`AI places White at [${selectedMove.row}, ${selectedMove.col}] (Score: ${selectedMove.score.toFixed(2)})`);
 
     setTimeout(() => {
