@@ -24,6 +24,14 @@ services:
     depends_on:
       - tic-tac-toe-backend
 
+  go-frontend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend
+    container_name: go-frontend
+    networks:
+      - app_network
+    ports:
+      - "8092:80"
+
   tic-tac-toe-backend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/tic-tac-toe/tic-tac-toe-backend
     container_name: tic-tac-toe-backend
@@ -44,6 +52,36 @@ services:
     depends_on:
       - platform-db
       - idp_keycloak
+
+  go-backend:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-backend
+    container_name: go-backend
+    expose:
+      - "8082"
+    networks:
+      - app_network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=go
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL-AUTO: update
+      SPRING_JPA_SHOW-SQL: false
+      SPRING_SQL_INIT_MODE: always
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
+      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
+      SPRING_RABBITMQ_ADDRRESSES: mq_rabbitmq:5672
+      SPRING_RABBITMQ_USERNAME: user
+      SPRING_RABBITMQ_PASSWORD: password
+    depends_on:
+      platform-db:
+        condition: service_started
+      idp_keycloak:
+        condition: service_started
+      mq_rabbitmq:
+        condition: service_healthy
+      go-frontend:
+        condition: service_started
 
   platform-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-frontend
@@ -71,9 +109,16 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
+      SPRING_RABBITMQ_ADDRRESSES: mq_rabbitmq:5672
+      SPRING_RABBITMQ_USERNAME: user
+      SPRING_RABBITMQ_PASSWORD: password
     depends_on:
-      - platform-db
-      - idp_keycloak
+      platform-db:
+        condition: service_started
+      idp_keycloak:
+        condition: service_started
+      mq_rabbitmq:
+        condition: service_healthy
 
 
   platform-db:
@@ -132,6 +177,27 @@ services:
     volumes:
       # make sure to delete any 'authorizationSettings' from realm-export.json
       - ./keycloak/import/realm-export.json:/opt/keycloak/data/import/FourteenGames-realm.json
+
+  mq_rabbitmq:
+    image: rabbitmq:3.13.7-management-alpine
+    container_name: mq_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: 'user'
+      RABBITMQ_DEFAULT_PASS: 'password'
+    expose:
+      - "5672" #AMQP
+      - "15672" #MGMT
+    networks:
+      - app_network
+    volumes:
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
+      - ./rabbitmq/log/:/var/log/rabbitmq/
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
 networks:
   app_network:
