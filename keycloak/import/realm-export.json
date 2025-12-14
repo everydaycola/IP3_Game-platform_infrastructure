@@ -842,8 +842,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:5175/gamehosts/go/",
-        "http://localhost:5175/gamehosts/go/*",
+        "http://localhost:5175/*",
         "http://localhost:5175/"
       ],
       "webOrigins": [
@@ -1197,8 +1196,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "http://localhost:5174/gamehosts/tic-tac-toe/",
-        "http://localhost:5174/gamehosts/tic-tac-toe/*",
+        "http://localhost:5174/*",
         "http://localhost:5174/"
       ],
       "webOrigins": [
