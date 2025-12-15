@@ -19,6 +19,11 @@ services:
     container_name: tic-tac-toe-frontend
     networks:
      - app_network
+    environment:
+      VITE_BASENAME: /gamehosts/tic-tac-toe
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: TTT-frontend
     ports:
       - "8091:80"
     depends_on:
