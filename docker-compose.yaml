@@ -1,4 +1,4 @@
-name: team_14_experimental
+name: team_14
 
 services:
   app_postgres:

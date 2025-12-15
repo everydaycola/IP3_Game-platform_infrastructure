@@ -163,9 +163,10 @@ services:
       KC_DB_PASSWORD: 'password'
       KC_HTTP_ENABLED: 'true'
       KC_PROXY: 'edge'
-      KC_HOSTNAME: 'http://localhost:8090'
+      KC_HOSTNAME: 'http://localhost:8090/auth'
       KC_HOSTNAME_STRICT: 'false'
       KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_HTTP_RELATIVE_PATH: '/auth'
     command: start --import-realm
     expose:
       - "8080"
