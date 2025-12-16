@@ -83,7 +83,7 @@ app.post('/api/go/ai-move', (req, res) => {
 
     if (possibleMoves.length === 0) {
         console.log("AI passes");
-        return res.json({passed: true, message: "AI passes"});
+        return res.json({row: -1, col: -1, message: "AI passes"});
     }
 
     possibleMoves.sort((a, b) => b.score - a.score);
