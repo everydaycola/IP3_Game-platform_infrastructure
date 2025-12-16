@@ -25,7 +25,7 @@ services:
       - tic-tac-toe-backend
 
   go-frontend:
-    image: go-frontend
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend:latest
     container_name: go-frontend
     networks:
       - app_network
