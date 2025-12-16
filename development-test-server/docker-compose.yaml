@@ -19,21 +19,20 @@ services:
     container_name: tic-tac-toe-frontend
     networks:
      - app_network
+    environment:
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: TTT-frontend
     ports:
       - "8091:80"
     depends_on:
       - tic-tac-toe-backend
 
   go-frontend:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend:latest
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend
     container_name: go-frontend
     networks:
       - app_network
-    environment:
-      VITE_BASENAME: /gamehosts/go
-      VITE_KC_URL: http://idp_keycloak:8090/auth
-      VITE_KC_REALM: FourteenGames
-      VITE_KC_CLIENT_ID: go-frontend
     ports:
       - "8092:80"
 
