@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 8001;
+const port = 8000;
 
 app.use(express.json());
 app.use((req, res, next) => {
@@ -15,7 +15,7 @@ const WHITE = "W";
 
 const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 
-app.post('/go/api/ai-move', (req, res) => {
+app.post('/api/go/ai-move', (req, res) => {
     if (req.body.isLastTurnPassed) {
         return res.json({passed: true});
     }
