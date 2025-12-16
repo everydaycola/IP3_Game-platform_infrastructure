@@ -25,10 +25,15 @@ services:
       - tic-tac-toe-backend
 
   go-frontend:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend:latest
     container_name: go-frontend
     networks:
       - app_network
+    environment:
+      VITE_BASENAME: /gamehosts/go
+      VITE_KC_URL: http://idp_keycloak:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: go-frontend
     ports:
       - "8092:80"
 
@@ -224,7 +229,11 @@ configs:
           location /gamehosts/tic-tac-toe/ {
             proxy_pass http://tic-tac-toe-frontend/;
           }
-
+      
+          location /gamehosts/go/ {
+            proxy_pass http://go-frontend/;
+          }
+      
           # API's
           location /api {
             proxy_pass http://platform-backend:8080;
