@@ -33,6 +33,11 @@ services:
     container_name: go-frontend
     networks:
       - app_network
+    environment:
+      VITE_BASENAME: /gamehosts/go
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: go-frontend
     ports:
       - "8092:80"
 
@@ -77,6 +82,7 @@ services:
       SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
+      SPRING_RABBITMQ_FOURTEENGAMES_GAME-URL: http://proxy/gamehosts/go/
     depends_on:
       platform-db:
         condition: service_started
@@ -85,6 +91,8 @@ services:
       mq_rabbitmq:
         condition: service_healthy
       go-frontend:
+        condition: service_started
+      proxy:
         condition: service_started
 
   platform-frontend:
@@ -172,8 +180,8 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HTTP_RELATIVE_PATH: '/auth'
     command: start --import-realm
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     depends_on:
       - idp_mysql
     networks:
@@ -188,9 +196,9 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: 'user'
       RABBITMQ_DEFAULT_PASS: 'password'
-    expose:
-      - "5672" #AMQP
-      - "15672" #MGMT
+    ports:
+      - "5672:5672" #AMQP
+      - "15672:15672" #MGMT
     networks:
       - app_network
     volumes:
