@@ -312,11 +312,11 @@
       ],
       "go-backend": [
         {
-          "id": "b8448e69-280d-4492-ae19-0819421ea13f",
+          "id": "5b5d924c-d0e5-4a77-a4ea-59c135138f62",
           "name": "uma_protection",
           "composite": false,
           "clientRole": true,
-          "containerId": "811f424f-a904-4bf2-8721-0683836571ec",
+          "containerId": "a357fb35-777a-42c0-bfea-96d2c3847667",
           "attributes": {}
         }
       ],
@@ -492,11 +492,11 @@
   "webAuthnPolicyPasswordlessExtraOrigins": [],
   "users": [
     {
-      "id": "66bbab96-9e95-4df1-9de5-595b871623fd",
+      "id": "25644fe5-5e0a-4840-8ba9-4a91e1033196",
       "username": "service-account-go-backend",
       "emailVerified": false,
       "enabled": true,
-      "createdTimestamp": 1764780794641,
+      "createdTimestamp": 1766073404878,
       "totp": false,
       "serviceAccountClientId": "go-backend",
       "disableableCredentialTypes": [],
@@ -768,7 +768,7 @@
       ]
     },
     {
-      "id": "811f424f-a904-4bf2-8721-0683836571ec",
+      "id": "a357fb35-777a-42c0-bfea-96d2c3847667",
       "clientId": "go-backend",
       "name": "go backend",
       "description": "",
@@ -800,12 +800,10 @@
       "attributes": {
         "realm_client": "false",
         "oidc.ciba.grant.enabled": "false",
-        "client.secret.creation.time": "1764780794",
+        "client.secret.creation.time": "1766073404",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
-        "frontchannel.logout.session.required": "true",
         "post.logout.redirect.uris": "*",
-        "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
@@ -830,7 +828,7 @@
       ]
     },
     {
-      "id": "c054dd1e-d28f-4959-acac-6bd9a39ae6f8",
+      "id": "6579e42f-13c8-4483-9baf-81b5e654a315",
       "clientId": "go-frontend",
       "name": "go frontend",
       "description": "",
@@ -982,9 +980,7 @@
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
-        "frontchannel.logout.session.required": "true",
         "post.logout.redirect.uris": "*",
-        "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
@@ -1214,9 +1210,7 @@
         "oidc.ciba.grant.enabled": "false",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
-        "frontchannel.logout.session.required": "true",
         "post.logout.redirect.uris": "*",
-        "display.on.consent.screen": "false",
         "oauth2.device.authorization.grant.enabled": "false",
         "backchannel.logout.revoke.offline.tokens": "false"
       },
@@ -1950,7 +1944,7 @@
     "referrerPolicy": "no-referrer",
     "xRobotsTag": "none",
     "xFrameOptions": "SAMEORIGIN",
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self' http://localhost:5173 http://localhost:5174 http://localhost:5175; object-src 'none';",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
   "smtpServer": {},
