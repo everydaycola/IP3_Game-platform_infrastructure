@@ -11,8 +11,13 @@ services:
       - source: nginx-config
         target: /etc/nginx/nginx.conf
     depends_on:
+      - idp_keycloak
       - platform-frontend
       - tic-tac-toe-frontend
+      - go-frontend
+      - platform-backend
+      - tic-tac-toe-backend
+      - go-backend
 
   tic-tac-toe-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/tic-tac-toe/tic-tac-toe-frontend
@@ -25,8 +30,6 @@ services:
       VITE_KC_CLIENT_ID: TTT-frontend
     ports:
       - "8091:80"
-    depends_on:
-      - tic-tac-toe-backend
 
   go-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend
@@ -57,13 +60,13 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
-      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
     depends_on:
       - platform-db
       - idp_keycloak
 
   go-backend:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-backend
+    image: go-backend
     container_name: go-backend
     expose:
       - "8082"
@@ -78,8 +81,8 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
-      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
-      SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
+      SPRING_RABBITMQ_ADDRESSES: "mq_rabbitmq:5672"
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
       SPRING_RABBITMQ_FOURTEENGAMES_GAME-URL: http://proxy/gamehosts/go/
@@ -90,20 +93,20 @@ services:
         condition: service_started
       mq_rabbitmq:
         condition: service_healthy
-      go-frontend:
-        condition: service_started
-      proxy:
+      platform-backend:
         condition: service_started
 
   platform-frontend:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-frontend
+    image: platform-frontend
     container_name: platform-frontend
     networks:
      - app_network
+    environment:
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: platform-frontend
     expose:
       - "80"
-    depends_on:
-      - platform-backend
 
   platform-backend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-backend
@@ -121,6 +124,7 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
       SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
@@ -139,19 +143,19 @@ services:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'password'
       POSTGRES_DB: 'postgres'
-      PGDATA: /var/lib/postgresql/data/pgdata
+      PGDATA: postgresql_pgdata
     ports:
       - '5443:5432'
     networks:
      - app_network
     volumes:
-      - ./postgresql/data:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql
       - ./init-scripts/sql:/docker-entrypoint-initdb.d/
 
   idp_mysql:
     image: mysql:9.0.1
     volumes:
-      - ./idp_mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_DATABASE: 'keycloak'
@@ -161,6 +165,11 @@ services:
       - '3306'
     networks:
       - app_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   idp_keycloak:
     image: quay.io/keycloak/keycloak:26.3
@@ -183,7 +192,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - idp_mysql
+      idp_mysql:
+        condition: service_healthy
     networks:
       - app_network
     volumes:
@@ -202,14 +212,21 @@ services:
     networks:
       - app_network
     volumes:
-      - ./rabbitmq/data/:/var/lib/rabbitmq/
-      - ./rabbitmq/log/:/var/log/rabbitmq/
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
     healthcheck:
-      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 5
       start_period: 20s
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+  rabbitmq_log:
+  postgresql_data:
+  postgresql_pgdata:
 
 networks:
   app_network:
