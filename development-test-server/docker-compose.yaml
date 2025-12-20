@@ -96,7 +96,7 @@ services:
         condition: service_healthy
 
   platform-frontend:
-    image: platform-frontend
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-frontend
     container_name: platform-frontend
     networks:
      - app_network
@@ -251,24 +251,52 @@ configs:
 
           location /gamehosts/tic-tac-toe/ {
             proxy_pass http://tic-tac-toe-frontend/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
       
           location /gamehosts/go/ {
             proxy_pass http://go-frontend/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
       
           # API's
-          location /api {
-            proxy_pass http://platform-backend:8080;
+          location /api/ {
+            proxy_pass http://platform-backend:8080/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
 
-          location /tic-tac-toe/api {
-            proxy_pass http://tic-tac-toe-backend:8081;
+          location /tic-tac-toe/api/ {
+            proxy_pass http://tic-tac-toe-backend:8081/tic-tac-toe/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
+          }
+
+          location /go/api/ {
+            proxy_pass http://go-backend:8082/go/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
 
           # MAIN FRONTEND
           location / {
             proxy_pass http://platform-frontend:80;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
 
         }
