@@ -65,35 +65,35 @@ services:
       - ./rabbitmq/data/:/var/lib/rabbitmq/
       - ./rabbitmq/log/:/var/log/rabbitmq/
 
-  app_chessgame_front:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/front:latest
-    ports:
-      - '3333:80'
-    networks:
-      - backend
-    depends_on:
-      - app_chessgame_back
-      - app_rabbitmq
-      - app_postgres
-
-  app_chessgame_back:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/back:latest
-    ports:
-      - '8080:8080'
-    networks:
-      - backend
-    depends_on:
-      - app_postgres
-      - app_rabbitmq
-    environment:
-      GAME_REGISTRATION_ID: 8496c496-a884-48ed-9bb3-7c3aa50fb8ca
-      DATASOURCE_URL: jdbc:postgresql://app_postgres:5432/postgres?currentSchema=chess
-      DATASOURCE_USER: user
-      DATASOURCE_PASSWORD: password
-      RABBIT_HOST: app_rabbitmq
-      RABBIT_PORT: 5672
-      RABBIT_USER: user
-      RABBIT_PASSWORD: password
+#  app_chessgame_front:
+#    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/front:latest
+#    ports:
+#      - '3333:80'
+#    networks:
+#      - backend
+#    depends_on:
+#      - app_chessgame_back
+#      - app_rabbitmq
+#      - app_postgres
+#
+#  app_chessgame_back:
+#    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/back:latest
+#    ports:
+#      - '8080:8080'
+#    networks:
+#      - backend
+#    depends_on:
+#      - app_postgres
+#      - app_rabbitmq
+#    environment:
+#      GAME_REGISTRATION_ID: 8496c496-a884-48ed-9bb3-7c3aa50fb8ca
+#      DATASOURCE_URL: jdbc:postgresql://app_postgres:5432/postgres?currentSchema=chess
+#      DATASOURCE_USER: user
+#      DATASOURCE_PASSWORD: password
+#      RABBIT_HOST: app_rabbitmq
+#      RABBIT_PORT: 5672
+#      RABBIT_USER: user
+#      RABBIT_PASSWORD: password
 
 volumes:
   kc_data:
