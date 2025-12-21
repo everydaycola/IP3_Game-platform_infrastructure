@@ -20,8 +20,8 @@ app.post('/api/go/ai-move', (req, res) => {
         return res.json({passed: true});
     }
 
-    const boardState = req.body.board;
-    const size = req.body.size;
+    const boardState = req.body.boardState;
+    const size = req.body.boardState.length;
 
     if (!boardState || !Array.isArray(boardState) || boardState.length === 0) {
         return res.status(400).json({ error: "Invalid boardState format" });
