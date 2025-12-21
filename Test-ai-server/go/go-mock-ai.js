@@ -17,7 +17,8 @@ const isValid = (r, c, size) => r >= 0 && r < size && c >= 0 && c < size;
 
 app.post('/api/go/ai-move', (req, res) => {
     if (req.body.isLastTurnPassed) {
-        return res.json({passed: true});
+        console.log("AI passes");
+        return res.json({row: -1, col: -1, message: "AI passes"});
     }
 
     const boardState = req.body.boardState;
