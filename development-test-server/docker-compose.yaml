@@ -1,38 +1,48 @@
 services:
   #Reverse proxy is only for local testing!
   proxy:
-    image: nginx:latest
+    image: nginx:alpine
     container_name: reverse-proxy
     ports:
       - "8090:80"
     networks:
-     - app_network
+      - app_network
     configs:
       - source: nginx-config
         target: /etc/nginx/nginx.conf
     depends_on:
+      - idp_keycloak
       - platform-frontend
       - tic-tac-toe-frontend
+      - go-frontend
+#      - app_chessgame_front
+      - platform-backend
+      - tic-tac-toe-backend
+      - go-backend
+#      - app_chessgame_back
 
   tic-tac-toe-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/tic-tac-toe/tic-tac-toe-frontend
     container_name: tic-tac-toe-frontend
     networks:
-     - app_network
+      - app_network
     environment:
       VITE_KC_URL: http://localhost:8090/auth
       VITE_KC_REALM: FourteenGames
       VITE_KC_CLIENT_ID: TTT-frontend
     ports:
       - "8091:80"
-    depends_on:
-      - tic-tac-toe-backend
 
   go-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/games/go/go-frontend
     container_name: go-frontend
     networks:
       - app_network
+    environment:
+      VITE_BASENAME: /gamehosts/go
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: go-frontend
     ports:
       - "8092:80"
 
@@ -42,9 +52,9 @@ services:
     expose:
       - "8081"
     networks:
-     - app_network
+      - app_network
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=tictactoe  
+      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=tictactoe
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL-AUTO: update
@@ -52,7 +62,8 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
-      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
+      AI-CATALOG-API_URL: http://ai-player:8000/api/tictactoe
     depends_on:
       - platform-db
       - idp_keycloak
@@ -73,10 +84,13 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
-      CORS_ALLOWED_ORIGINS: "http://localhost:8090"
-      SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
+      SPRING_RABBITMQ_ADDRESSES: "mq_rabbitmq:5672"
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
+      SPRING_RABBITMQ_FOURTEENGAMES_INTERNAL-GAME-URL: http://proxy/gamehosts/go/
+      SPRING_RABBITMQ_FOURTEENGAMES_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/go/
+      AI-CATALOG-API_URL: http://ai-player:8000/api/go
     depends_on:
       platform-db:
         condition: service_started
@@ -84,18 +98,18 @@ services:
         condition: service_started
       mq_rabbitmq:
         condition: service_healthy
-      go-frontend:
-        condition: service_started
 
   platform-frontend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-frontend
     container_name: platform-frontend
     networks:
-     - app_network
+      - app_network
+    environment:
+      VITE_KC_URL: http://localhost:8090/auth
+      VITE_KC_REALM: FourteenGames
+      VITE_KC_CLIENT_ID: platform-frontend
     expose:
       - "80"
-    depends_on:
-      - platform-backend
 
   platform-backend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-backend
@@ -103,9 +117,9 @@ services:
     expose:
       - "8080"
     networks:
-     - app_network
+      - app_network
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=platform  
+      SPRING_DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=platform
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_JPA_HIBERNATE_DDL-AUTO: update
@@ -113,6 +127,7 @@ services:
       SPRING_SQL_INIT_MODE: always
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
+      CORS_ALLOWED-ORIGINS: "http://localhost:8090"
       SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
@@ -124,26 +139,68 @@ services:
       mq_rabbitmq:
         condition: service_healthy
 
-
   platform-db:
     image: postgres:17.6-alpine
     environment:
       POSTGRES_USER: 'user'
       POSTGRES_PASSWORD: 'password'
       POSTGRES_DB: 'postgres'
-      PGDATA: /var/lib/postgresql/data/pgdata
+      PGDATA: postgresql_pgdata
     ports:
       - '5443:5432'
     networks:
-     - app_network
+      - app_network
     volumes:
-      - ./postgresql/data:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql
       - ./init-scripts/sql:/docker-entrypoint-initdb.d/
+
+#  app_chessgame_front:
+#    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/front:latest
+#    container_name: app_chessgame_front
+#    ports:
+#      - '8093:80'
+#    networks:
+#      - app_network
+#    depends_on:
+#      platform-db:
+#        condition: service_started
+#      mq_rabbitmq:
+#        condition: service_healthy
+#
+#  app_chessgame_back:
+#    image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/back:latest
+#    container_name: app_chessgame_back
+#    ports:
+#      - '8083:8080'
+#    networks:
+#      - app_network
+#    depends_on:
+#      platform-db:
+#        condition: service_started
+#      mq_rabbitmq:
+#        condition: service_healthy
+#    environment:
+#      GAME_REGISTRATION_ID: 33333333-3333-3333-3333-333333333333
+#      DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=chess
+#      DATASOURCE_USER: user
+#      DATASOURCE_PASSWORD: password
+#      RABBIT_HOST: mq_rabbitmq
+#      RABBIT_PORT: 5672
+#      RABBIT_USER: user
+#      RABBIT_PASSWORD: password
+
+  ai-player:
+    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team2/ip2/ai-player/ai-player:latest
+    container_name: ai-player
+    ports:
+      - '8000'
+    networks:
+      - app_network
 
   idp_mysql:
     image: mysql:9.0.1
     volumes:
-      - ./idp_mysql_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
       MYSQL_DATABASE: 'keycloak'
@@ -153,6 +210,11 @@ services:
       - '3306'
     networks:
       - app_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   idp_keycloak:
     image: quay.io/keycloak/keycloak:26.3
@@ -172,10 +234,11 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: 'false'
       KC_HTTP_RELATIVE_PATH: '/auth'
     command: start --import-realm
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     depends_on:
-      - idp_mysql
+      idp_mysql:
+        condition: service_healthy
     networks:
       - app_network
     volumes:
@@ -188,20 +251,27 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: 'user'
       RABBITMQ_DEFAULT_PASS: 'password'
-    expose:
-      - "5672" #AMQP
-      - "15672" #MGMT
+    ports:
+      - "5672:5672" #AMQP
+      - "15672:15672" #MGMT
     networks:
       - app_network
     volumes:
-      - ./rabbitmq/data/:/var/lib/rabbitmq/
-      - ./rabbitmq/log/:/var/log/rabbitmq/
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
     healthcheck:
-      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity" ]
       interval: 10s
       timeout: 5s
-      retries: 12
+      retries: 5
       start_period: 20s
+
+volumes:
+  mysql_data:
+  rabbitmq_data:
+  rabbitmq_log:
+  postgresql_data:
+  postgresql_pgdata:
 
 networks:
   app_network:
@@ -227,24 +297,73 @@ configs:
 
           location /gamehosts/tic-tac-toe/ {
             proxy_pass http://tic-tac-toe-frontend/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
       
           location /gamehosts/go/ {
             proxy_pass http://go-frontend/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
       
+          # location /gamehosts/chess/ {
+          #   proxy_pass http://app_chessgame_front/;
+          #   proxy_set_header Accept-Encoding "";
+         
+          #   # 1. Existing asset fixes (Keep these!)
+          #   sub_filter 'src="/' 'src="/gamehosts/chess/';
+          #   sub_filter 'href="/' 'href="/gamehosts/chess/';
+          #   sub_filter '<head>' '<head><script>(function(){var p="/gamehosts/chess";var h=window.history;var oP=h.pushState;var oR=h.replaceState;h.pushState=function(s,t,u){if(u&&u.startsWith("/")&&!u.startsWith(p)){u=p+u;}return oP.apply(h,[s,t,u]);};h.replaceState=function(s,t,u){if(u&&u.startsWith("/")&&!u.startsWith(p)){u=p+u;}return oR.apply(h,[s,t,u]);};if(location.pathname.startsWith(p)){var r=location.pathname.substring(p.length)||"/";oR.apply(h,[null,null,r]);}})();</script>';
+        
+          #   sub_filter_once on;
+          #   sub_filter_types text/html;
+          # }
+      
           # API's
-          location /api {
-            proxy_pass http://platform-backend:8080;
+          location /api/ {
+            proxy_pass http://platform-backend:8080/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
 
-          location /tic-tac-toe/api {
-            proxy_pass http://tic-tac-toe-backend:8081;
+          location /tic-tac-toe/api/ {
+            proxy_pass http://tic-tac-toe-backend:8081/tic-tac-toe/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
+
+          location /go/api/ {
+            proxy_pass http://go-backend:8082/go/api/;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
+          }
+      
+          # location /chess/api/ {
+          #   proxy_pass http://app_chessgame_back:8083/chess/api/;
+          #   proxy_set_header Host $$http_host;
+          #   proxy_set_header X-Real-IP $$remote_addr;
+          #   proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          #   proxy_set_header X-Forwarded-Proto $$scheme;
+          # }
 
           # MAIN FRONTEND
           location / {
             proxy_pass http://platform-frontend:80;
+            proxy_set_header Host $$http_host;
+            proxy_set_header X-Real-IP $$remote_addr;
+            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $$scheme;
           }
 
         }
