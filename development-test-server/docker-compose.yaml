@@ -88,8 +88,8 @@ services:
       SPRING_RABBITMQ_ADDRESSES: "mq_rabbitmq:5672"
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
-      SPRING_RABBITMQ_FOURTEENGAMES_INTERNAL-GAME-URL: http://proxy/gamehosts/go/
-      SPRING_RABBITMQ_FOURTEENGAMES_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/go/
+      SPRING_GAME_REGISTRATION_INTERNAL-GAME-URL: http://proxy/gamehosts/go/
+      SPRING_GAME_REGISTRATION_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/go/
       AI-CATALOG-API_URL: http://ai-player:8000/api/go
     depends_on:
       platform-db:
@@ -113,7 +113,7 @@ services:
 
   platform-backend:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-backend
-    container_name: platform-backend-image
+    container_name: platform-backend
     expose:
       - "8080"
     networks:
@@ -326,7 +326,7 @@ configs:
       
           # API's
           location /api/ {
-            proxy_pass http://platform-backend:8080/api/;
+            proxy_pass http://platform-backend:8070/api/;
             proxy_set_header Host $$http_host;
             proxy_set_header X-Real-IP $$remote_addr;
             proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
