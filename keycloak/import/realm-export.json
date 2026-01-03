@@ -347,6 +347,16 @@
           "attributes": {}
         }
       ],
+      "chess-acl": [
+        {
+          "id": "50521cd7-9a10-43d5-80f2-587db55bc9da",
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "a547d6f2-9c17-41a4-aa2c-928d6b10ed5a",
+          "attributes": {}
+        }
+      ],
       "account": [
         {
           "id": "4062f30b-a687-4229-8b72-d0990f35f774",
@@ -491,6 +501,27 @@
   "webAuthnPolicyPasswordlessAcceptableAaguids": [],
   "webAuthnPolicyPasswordlessExtraOrigins": [],
   "users": [
+    {
+      "id": "690f030a-ec39-4df6-96ff-d258ee8cc0b8",
+      "username": "service-account-chess-acl",
+      "emailVerified": false,
+      "enabled": true,
+      "createdTimestamp": 1767454899243,
+      "totp": false,
+      "serviceAccountClientId": "chess-acl",
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-fourteengames"
+      ],
+      "clientRoles": {
+        "chess-acl": [
+          "uma_protection"
+        ]
+      },
+      "notBefore": 0,
+      "groups": []
+    },
     {
       "id": "66bbab96-9e95-4df1-9de5-595b871623fd",
       "username": "service-account-go-backend",
@@ -752,6 +783,69 @@
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
       "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "basic",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "organization",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    },
+    {
+      "id": "a547d6f2-9c17-41a4-aa2c-928d6b10ed5a",
+      "clientId": "chess-acl",
+      "name": "Chess ACL",
+      "description": "",
+      "rootUrl": "",
+      "adminUrl": "",
+      "baseUrl": "",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "DjNhCzraGfJ4gfd2NJKwQ4OZtLVtipsP",
+      "redirectUris": [
+        "http://localhost:8083/*"
+      ],
+      "webOrigins": [
+        ""
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "realm_client": "false",
+        "oidc.ciba.grant.enabled": "false",
+        "client.secret.creation.time": "1767454899",
+        "backchannel.logout.session.required": "true",
+        "standard.token.exchange.enabled": "false",
+        "frontchannel.logout.session.required": "true",
+        "post.logout.redirect.uris": "http://localhost:8083/*",
+        "display.on.consent.screen": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "use.jwks.url": "false",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "service_account",
         "web-origins",
         "acr",
         "roles",
