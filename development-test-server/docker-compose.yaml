@@ -189,14 +189,6 @@ services:
 #      RABBIT_USER: user
 #      RABBIT_PASSWORD: password
 
-  ai-player:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team2/ip2/ai-player/ai-player:latest
-    container_name: ai-player
-    ports:
-      - '8000'
-    networks:
-      - app_network
-
   idp_mysql:
     image: mysql:9.0.1
     volumes:
