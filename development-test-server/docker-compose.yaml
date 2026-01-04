@@ -63,7 +63,7 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: http://localhost:8090/auth/realms/FourteenGames
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
       CORS_ALLOWED-ORIGINS: "http://localhost:8090"
-      AI-CATALOG-API_URL: http://ai-player:8000/api/tictactoe
+      AI-CATALOG-API_URL: http://host.docker.internal:8000/api/tictactoe
     depends_on:
       - platform-db
       - idp_keycloak
@@ -90,7 +90,7 @@ services:
       SPRING_RABBITMQ_PASSWORD: password
       SPRING_GAME_REGISTRATION_INTERNAL-GAME-URL: http://proxy/gamehosts/go/
       SPRING_GAME_REGISTRATION_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/go/
-      AI-CATALOG-API_URL: http://ai-player:8000/api/go
+      AI-CATALOG-API_URL: http://host.docker.internal:8000/api/go
     depends_on:
       platform-db:
         condition: service_started
@@ -188,14 +188,6 @@ services:
 #      RABBIT_PORT: 5672
 #      RABBIT_USER: user
 #      RABBIT_PASSWORD: password
-
-  ai-player:
-    image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team2/ip2/ai-player/ai-player:latest
-    container_name: ai-player
-    ports:
-      - '8000'
-    networks:
-      - app_network
 
   idp_mysql:
     image: mysql:9.0.1
