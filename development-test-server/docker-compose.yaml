@@ -64,6 +64,11 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://idp_keycloak:8080/auth/realms/FourteenGames/protocol/openid-connect/certs
       CORS_ALLOWED-ORIGINS: "http://localhost:8090"
       AI-CATALOG-API_URL: http://host.docker.internal:8000/api/tictactoe
+      SPRING_RABBITMQ_ADDRESSES: "mq_rabbitmq:5672"
+      SPRING_RABBITMQ_USERNAME: user
+      SPRING_RABBITMQ_PASSWORD: password
+      SPRING_GAME_REGISTRATION_INTERNAL-GAME-URL: http://proxy/gamehosts/tic-tac-toe/
+      SPRING_GAME_REGISTRATION_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/tic-tac-toe/
     depends_on:
       - platform-db
       - idp_keycloak
@@ -131,6 +136,7 @@ services:
       SPRING_RABBITMQ_ADDRESSES: mq_rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
+      AI-CHATBOT-API_URL: http://host.docker.internal:8001/api/chat
     depends_on:
       platform-db:
         condition: service_started
