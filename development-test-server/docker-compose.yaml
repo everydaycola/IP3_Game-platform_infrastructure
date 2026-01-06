@@ -121,7 +121,7 @@ services:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/teams-25-26/team14/platform/platform-backend
     container_name: platform-backend
     expose:
-      - "8080"
+      - "8070"
     networks:
       - app_network
     environment:
@@ -177,8 +177,8 @@ services:
       SPRING_RABBITMQ_USERNAME: user
       SPRING_RABBITMQ_PASSWORD: password
       CHESSGAMEURL_URL: http://app-chessgame-back:8080/api
-      SPRING_GAME_REGISTER_INTERNAL-URL: http://proxy/gamehosts/chess/
-      SPRING_GAME_REGISTER_EXTERNAL-URL: http://localhost:8090/gamehosts/chess/
+      SPRING_GAME_REGISTER_INTERNAL-URL: http://app-chessgame-front:80/game/00000000-0000-0000-0000-000000000001
+      SPRING_GAME_REGISTER_EXTERNAL-URL: http://localhost:3333/game/00000000-0000-0000-0000-000000000001
     expose:
       - '8083'
     networks:
@@ -195,7 +195,7 @@ services:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/front:latest
     container_name: app_chessgame_front
     ports:
-      - '8093:80'
+      - "3333:80"
     networks:
       - app_network
     depends_on:
@@ -207,8 +207,8 @@ services:
   app-chessgame-back:
     image: registry.gitlab.com/kdg-ti/integratieproject-j3/demo-content/chessgame/back:latest
     container_name: app_chessgame_back
-    expose:
-      - '8080'
+    ports:
+      - "8080:8080"
     networks:
       - app_network
     depends_on:
@@ -217,7 +217,7 @@ services:
       mq_rabbitmq:
         condition: service_healthy
     environment:
-      GAME_REGISTRATION_ID: 33333333-3333-3333-3333-333333333333
+      GAME_REGISTRATION_ID: 44444444-4444-4444-4444-444444444444
       DATASOURCE_URL: jdbc:postgresql://platform-db:5432/postgres?currentSchema=chess
       DATASOURCE_USER: user
       DATASOURCE_PASSWORD: password
@@ -264,7 +264,7 @@ services:
       KC_HTTP_RELATIVE_PATH: '/auth'
     command: start --import-realm
     ports:
-      - "8080:8080"
+      - "8080"
     depends_on:
       idp_mysql:
         condition: service_healthy
@@ -338,66 +338,6 @@ configs:
             proxy_set_header X-Real-IP $$remote_addr;
             proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $$scheme;
-          }
-      
-          #  BLACK BOX CHESS APP (Subpath Rewrite Magic)
-          location /gamehosts/chess/ {
-            proxy_pass http://app-chessgame-front/;
-            proxy_set_header Host $$http_host;
-            proxy_set_header X-Real-IP $$remote_addr;
-            proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $$scheme;
-      
-            # Subpath Rewriting Logic
-            proxy_set_header Accept-Encoding ""; # Force uncompressed to allow rewriting
-      
-            # CRITICAL: We enable * to ensure JS files are filtered regardless of backend MIME type
-            sub_filter_types *;
-      
-            # 1. Fix HTML references (HTML attributes)
-            sub_filter 'src="/'  'src="/gamehosts/chess/';
-            sub_filter 'href="/' 'href="/gamehosts/chess/';
-            sub_filter 'action="/' 'action="/gamehosts/chess/';
-      
-            # 2. Fix JS React Router Logic
-            #    We use multiple variations to catch minified/unminified formats.
-            #    The "*" type above ensures these actually run on the JS bundle.
-      
-            sub_filter 'path:"/"' 'path:"/gamehosts/chess/"'; 
-            sub_filter 'path: "/"' 'path: "/gamehosts/chess/"';
-            sub_filter "path:'/'" "path:'/gamehosts/chess/'";
-            sub_filter "path: '/'" "path: '/gamehosts/chess/'";
-
-            # Catch-all routes often used in React Router
-            sub_filter 'path:"*"' 'path:"/gamehosts/chess/*"';
-
-            # Fix generic absolute paths in routes (e.g. path: "/login")
-            sub_filter 'path:"/' 'path:"/gamehosts/chess/';
-            sub_filter "path:'/" "path:'/gamehosts/chess/";
-
-            # Fix Navigation Links (e.g., to: "/")
-            sub_filter 'to:"/"' 'to:"/gamehosts/chess/"';
-            sub_filter 'to: "/"' 'to: "/gamehosts/chess/"';
-            sub_filter "to:'/'" "to:'/gamehosts/chess/'";
-      
-            # Fix generic absolute paths in links
-            sub_filter 'to:"/' 'to:"/gamehosts/chess/';
-            sub_filter "to:'/" "to:'/gamehosts/chess/";
-      
-            # 3. Fix API calls in JS files
-            sub_filter '"/api' '"/gamehosts/chess/api';
-            sub_filter "'/api" "'/gamehosts/chess/api";
-      
-            sub_filter_once off;
-          }
-      
-          location /gamehosts/chess/api/ {
-             proxy_pass http://app-chessgame-back:8080/api/;
-      
-             proxy_set_header Host $$http_host;
-             proxy_set_header X-Real-IP $$remote_addr;
-             proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-             proxy_set_header X-Forwarded-Proto $$scheme;
           }
       
           # API's
