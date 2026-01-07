@@ -70,6 +70,7 @@ services:
       SPRING_RABBITMQ_PASSWORD: password
       SPRING_GAME_REGISTRATION_INTERNAL-GAME-URL: http://proxy/gamehosts/tic-tac-toe/
       SPRING_GAME_REGISTRATION_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/tic-tac-toe/
+      SPRING_GAME_REGISTRATION_START-GAME-ENDPOINT: http://tic-tac-toe-backend:8081/tic-tac-toe/api/matches
     depends_on:
       - platform-db
       - idp_keycloak
@@ -96,6 +97,7 @@ services:
       SPRING_RABBITMQ_PASSWORD: password
       SPRING_GAME_REGISTRATION_INTERNAL-GAME-URL: http://proxy/gamehosts/go/
       SPRING_GAME_REGISTRATION_EXTERNAL-GAME-URL: http://localhost:8090/gamehosts/go/
+      SPRING_GAME_REGISTRATION_START-GAME-ENDPOINT: http://go-backend:8082/go/api/matches
       AI-CATALOG-API_URL: http://host.docker.internal:8000/api/go
     depends_on:
       platform-db:
@@ -179,6 +181,9 @@ services:
       CHESSGAMEURL_URL: http://app-chessgame-back:8080/api
       SPRING_GAME_REGISTER_INTERNAL-URL: http://app-chessgame-front:80/game/00000000-0000-0000-0000-000000000001
       SPRING_GAME_REGISTER_EXTERNAL-URL: http://localhost:3333/game/00000000-0000-0000-0000-000000000001
+      SPRING_GAME_REGISTER_REGISTER-ID: 00000000-0000-0000-0000-000000000001
+      SPRING_GAME_REGISTER_AI-START-GAME-ENDPOINT: http://chess-acl:8083/chess-acl/api/matches
+      SPRING_GAME_REGISTER_START-GAME-ENDPOINT: http://chess-acl:8083/chess-acl/api/matches
     expose:
       - '8083'
     networks:
